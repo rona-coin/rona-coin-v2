@@ -1,0 +1,12 @@
+# Ignore local NODE JS files
+node_modules
+package-lock.json
+
+# Ignore dev templates
+templates
+
+# Ignore secret things
+.secret
+
+# Ignore unfinished documentation
+documentation
