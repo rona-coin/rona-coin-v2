@@ -20,19 +20,19 @@ contract RonaCoinV2 is BuildableContext, IBEP20 {
     uint256 private _totalSupply;
     uint8 private _decimals;
 
-    address private _ronaCarrier;
+    address private _carrier;
 
 
-    constructor (string name, string symbol, uint256 initialSupply, uint8 decimals, address ronaCarrier) {
+    constructor (string name, string symbol, uint256 initialSupply, uint8 decimals, address carrier) {
         _name = name;
         _symbol = symbol;
         _decimals = decimals;
         _totalSupply = initialSupply * (10**_decimals);
 
-        _ronaCarrier = ronaCarrier;
+        _carrier = carrier;
 
-        _balances[_ronaCarrier] = _totalSupply;
-        emit Transfer(address(0), _ronaCarrier, _totalSupply);
+        _balances[_carrier] = _totalSupply;
+        emit Transfer(address(0), _carrier, _totalSupply);
     }
 
 
@@ -48,8 +48,8 @@ contract RonaCoinV2 is BuildableContext, IBEP20 {
         return _factory();
     }
 
-    function ronaCarrier() external view returns (address) {
-        return _ronaCarrier;
+    function carrier() external view returns (address) {
+        return _carrier;
     }
     
     function decimals() external view returns (uint8) {
@@ -94,19 +94,19 @@ contract RonaCoinV2 is BuildableContext, IBEP20 {
     }
 
     function mint(uint256 amount) external onlyFactory returns (bool) {
-        _mint(_ronaCarrier, amount);
+        _mint(_carrier, amount);
         return true;
     }
 
     function burn(uint256 amount) external onlyFactory returns (bool) {
-        _burn(_ronaCarrier, amount);
+        _burn(_carrier, amount);
         return true;
     }
 
-    function updateRonaCarrier(address newRonaCarrier) external onlyFactory returns (bool) {
-        require(newRonaCarrier != address(0), "Update rona carrier: carrier cannot be 0 address");
+    function updateCarrier(address newCarrier) external onlyFactory returns (bool) {
+        require(newCarrier != address(0), "Update carrier: carrier cannot be 0 address");
 
-        _ronaCarrier = newRonaCarrier;
+        _carrier = newCarrier;
 
         return true;
     }
@@ -117,15 +117,15 @@ contract RonaCoinV2 is BuildableContext, IBEP20 {
 
         _balances[from] = _balances[from].sub(amount, "Transfer: amount exceeds senser's balance");
 
-        if(from == _ronaCarrier) {
+        if(from == _carrier) {
             _balances[to] = _balances[to].add(amount);
             emit Transfer(from, to, amount);
         } else {
-            _balances[_ronaCarrier] = _balances[_ronaCarrier].add(amount);
-            emit Transfer(from, _ronaCarrier, amount);
+            _balances[_carrier] = _balances[_carrier].add(amount);
+            emit Transfer(from, _carrier, amount);
 
-            ICarrier(_ronaCarrier).carry(from, to, amount);
-            ICarrier(_ronaCarrier).batch();
+            ICarrier(_carrier).carry(from, to, amount);
+            ICarrier(_carrier).batch();
         }
     }
 
