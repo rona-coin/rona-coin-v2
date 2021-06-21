@@ -22,18 +22,14 @@ contract RonaCoinV2 is BuildableContext, IBEP20 {
 
     address private _ronaCarrier;
 
-    uint256 private _transferFeePercentage;
 
-
-    constructor (string name, string symbol, uint256 initialSupply, uint8 decimals, uint256 transferFeePercentage, address ronaCarrier) {
+    constructor (string name, string symbol, uint256 initialSupply, uint8 decimals, address ronaCarrier) {
         _name = name;
         _symbol = symbol;
         _decimals = decimals;
         _totalSupply = initialSupply * (10**_decimals);
 
         _ronaCarrier = ronaCarrier;
-
-        _transferFeePercentage = transferFeePercentage;
 
         _balances[_ronaCarrier] = _totalSupply;
         emit Transfer(address(0), _ronaCarrier, _totalSupply);
@@ -62,10 +58,6 @@ contract RonaCoinV2 is BuildableContext, IBEP20 {
 
     function totalSupply() external view returns (uint256) {
         return _totalSupply;
-    }
-
-    function transferFeePercentage() external view returns (uint256) {
-        return _transferFeePercentage;
     }
 
     function balanceOf(address account) external view returns (uint256) {
@@ -111,14 +103,6 @@ contract RonaCoinV2 is BuildableContext, IBEP20 {
         return true;
     }
 
-    function updateTransferFeePercentage(uint256 newTransferFeePercentage) external onlyFactory returns (bool) {
-        require(newTransferFeePercentage < 100, "Update transfer fee percentage: transfer fee cannot exceed 100%");
-        
-        _transferFeePercentage = newTransferFeePercentage;
-
-        return true;
-    }
-
     function updateRonaCarrier(address newRonaCarrier) external onlyFactory returns (bool) {
         require(newRonaCarrier != address(0), "Update rona carrier: carrier cannot be 0 address");
 
@@ -131,21 +115,18 @@ contract RonaCoinV2 is BuildableContext, IBEP20 {
         require(from != address(0), "Transfer: cannot transfer from the 0 address");
         require(to != address(0), "Transfer: cannot transfer to the 0 address");
 
-        _balances[from] = _balances[from].sub(amount, "Transfer: amount exceeds balance");
+        _balances[from] = _balances[from].sub(amount, "Transfer: amount exceeds senser's balance");
 
-        if(from != _ronaCarrier) {
-            uint256 transferFeeAmount = amount.mul(_transferFeePercentage).div(100);
+        if(from == _ronaCarrier) {
+            _balances[to] = _balances[to].add(amount);
+            emit Transfer(from, to, amount);
+        } else {
+            _balances[_ronaCarrier] = _balances[_ronaCarrier].add(amount);
+            emit Transfer(from, _ronaCarrier, amount);
 
-            _balances[_ronaCarrier] = _balances[_ronaCarrier].add(transferFeeAmount);
-            emit Transfer(from, _ronaCarrier, transferFeeAmount);
-
-            ICarrier(_ronaCarrier).carry(address(this), transferFeeAmount);
-                
-            amount = amount.sub(transferFeeAmount);
+            ICarrier(_ronaCarrier).carry(from, to, amount);
+            ICarrier(_ronaCarrier).batch();
         }
-        
-        _balances[to] = _balances[to].add(amount);
-        emit Transfer(from, to, amount);
     }
 
     function _approve(address owner, address spender, uint256 amount) internal {

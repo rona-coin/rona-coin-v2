@@ -24,16 +24,16 @@ contract RonaCarrier is BuildableContext, ICarrier {
     address private _charityWalletAddress;
 
     mapping (address => uint256) private _owedRonaDistributions;
-    address[] private _ronaHolders;
+    address[] private _ronaDistributionRecievers;
 
 
     constructor (uint256 charityFeePercentage, uint256 holderDistributionFeePercentage, uint256 liquidityPoolingFeePercentage) {
         require((charityFeePercentage + holderDistributionFeePercentage + liquidityPoolingFeePercentage) < 100, "Transfer fees: transfer fees cannot total more than 100%");
 
-        _wBNB = address(0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c);
+        _wBNB = address(0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c); // hardcoded token address
 
-        _ronaCoinV1 = address(0x864397B060A2210E9DeD2e9a8D63CD7A83eb0EF0);
-        _ronaCoinV2 = address(0);
+        _ronaCoinV1 = address(0x864397B060A2210E9DeD2e9a8D63CD7A83eb0EF0); // hardcoded token address
+        _ronaCoinV2 = address(0); // setRonaCoinV2Address method must be called once and only once by lab contract after construction of carrier and coin
 
         _charityFeePercentage = charityFeePercentage;
         _holderDistributionFeePercentage = holderDistributionFeePercentage;
@@ -43,21 +43,38 @@ contract RonaCarrier is BuildableContext, ICarrier {
     }
 
 
-    function carry(address token, uint256 amount) public returns (bool) {
+    // Carry Rona V2 tokens
+    function carry(address from, address to, uint256 amount) public returns (bool) {
         require(_msgSender() == _ronaCoinV2, "Carry: cannot carry tokens from sender's address");
-        require(token == _ronaCoinV2, "Carry: cannot carry token type");
-        require(IBEP20(token).balanceOf(address(this)) >= amount, "Carry: insufficent carrier balance");
+        require(IBEP20(_ronaCoinV2).balanceOf(address(this)) >= amount, "Carry: insufficent carrier balance");
 
         // carry charity fee
-        _owedRonaDistributions[_charityWalletAddress] = _owedRonaDistributions[_charityWalletAddress].add(amount.mul(_charityFeePercentage).div(_totalTransferFeePercentage()));
+        _owedRonaDistributions[_charityWalletAddress] = _owedRonaDistributions[_charityWalletAddress].add(amount.mul(_charityFeePercentage).div(100));
 
         // carry holder distribution fee
-        // TODO - Implement this, whats the best way? blocked distributions, RFI??
-        // ...
+        // TODO
 
         // carry liquidity pooling fee
-        // TODO - Implement this
+        // TODO
+
+        IBEP20(_ronaCoinV2).transfer(to, amount.mul(_totalTransferFeePercentage()).div(100));
+
+        return true;
+    }
+
+    // Run Batch Transfer of owed Rona V2 tokens
+    function batch() public returns (bool) {
         // ...
+    }
+
+   // Forcefully retrieve owed Rona V2 tokens 
+    function retrieve() public returns (bool) {
+        require(_owedRonaDistributions[_msgSender()] > 0, "Retrieve: no tokens owed to sender");
+        require(IBEP20(_ronaCoinV2).balanceOf(address(this)) >= _owedRonaDistributions[_msgSender()], "Retrieve: insufficent carrier balance");
+
+        IBEP20(_ronaCoinV2).transfer(_msgSender(), _owedRonaDistributions[_msgSender()]);
+
+        _owedRonaDistributions[_msgSender()] = 0;
 
         return true;
     }
