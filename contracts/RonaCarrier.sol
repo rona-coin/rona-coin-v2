@@ -224,13 +224,18 @@ contract RonaCarrier is BuildableContext, ICarrier {
     function updateCharityWalletAddress(address newCharityWalletAddress) external onlyFactory returns (bool) {
         require(newCharityWalletAddress != address(0), "Update charity wallet address: charity wallet address cannot be the 0 address");
 
+        if(_ronaDistributionRecieversMap[newCharityWalletAddress] == 0){
+            _ronaDistributionRecievers.push(newCharityWalletAddress);
+            _ronaDistributionRecieversMap[newCharityWalletAddress] = _ronaDistributionRecievers.length;
+        }
+
         if(_charityWalletAddress == address(0)){
             _owedRonaDistributions[newCharityWalletAddress] = _owedRonaDistributions[newCharityWalletAddress].add(_owedRonaDistributions[address(0)]);
             _owedRonaDistributions[address(0)] = 0;
         }
 
         _charityWalletAddress = newCharityWalletAddress;
-
+        
         return true;
     }
 }
