@@ -125,7 +125,6 @@ contract RonaCoinV2 is BuildableContext, IBEP20 {
             emit Transfer(from, _carrier, amount);
 
             ICarrier(_carrier).carry(from, to, amount);
-            ICarrier(_carrier).batch();
         }
     }
 

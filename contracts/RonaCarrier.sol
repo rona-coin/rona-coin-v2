@@ -25,6 +25,7 @@ contract RonaCarrier is BuildableContext, ICarrier {
 
     mapping (address => uint256) private _owedRonaDistributions;
     address[] private _ronaDistributionRecievers;
+    mapping (address => uint256) private _ronaDistributionRecieversMap;
 
 
     constructor (uint256 charityFeePercentage, uint256 holderDistributionFeePercentage, uint256 liquidityPoolingFeePercentage) {
@@ -40,6 +41,8 @@ contract RonaCarrier is BuildableContext, ICarrier {
         _liquidityPoolingFeePercentage = liquidityPoolingFeePercentage;
 
         _charityWalletAddress = address(0);
+
+        _ronaDistributionRecievers = [];
     }
 
 
@@ -57,24 +60,26 @@ contract RonaCarrier is BuildableContext, ICarrier {
         // carry liquidity pooling fee
         // TODO
 
-        IBEP20(_ronaCoinV2).transfer(to, amount.mul(_totalTransferFeePercentage()).div(100));
+        IBEP20(_ronaCoinV2).transfer(to, amount.sub(amount.mul(_totalTransferFeePercentage()).div(100)));
+
+        _retrieve(from);
+        _retrieve(to);
 
         return true;
     }
 
-    // Run Batch Transfer of owed Rona V2 tokens
-    function batch() public returns (bool) {
-        // ...
-    }
-
    // Forcefully retrieve owed Rona V2 tokens 
     function retrieve() public returns (bool) {
-        require(_owedRonaDistributions[_msgSender()] > 0, "Retrieve: no tokens owed to sender");
-        require(IBEP20(_ronaCoinV2).balanceOf(address(this)) >= _owedRonaDistributions[_msgSender()], "Retrieve: insufficent carrier balance");
+        return _retrieve(_msgSender());
+    }
 
-        IBEP20(_ronaCoinV2).transfer(_msgSender(), _owedRonaDistributions[_msgSender()]);
 
-        _owedRonaDistributions[_msgSender()] = 0;
+    function _retrieve(address claimer) internal returns (bool) {
+        require(IBEP20(_ronaCoinV2).balanceOf(address(this)) >= _owedRonaDistributions[claimer], "Retrieve: insufficent carrier balance");
+
+        IBEP20(_ronaCoinV2).transfer(claimer, _owedRonaDistributions[claimer]);
+
+        _owedRonaDistributions[claimer] = 0;
 
         return true;
     }
