@@ -74,15 +74,19 @@ contract RonaCarrier is BuildableContext, ICarrier {
         // carry holder distribution fee
         uint256 individualHolderDistribution = amount.mul(_holderDistributionFeePercentage).div(100).add(_pendingRonaHolderDistributions).div(_ronaDistributionRecievers.length);
         if(individualHolderDistribution > 0){
+            _pendingRonaHolderDistributions = 0;
             for(uint256 i = 0; i < _ronaDistributionRecievers.length; i++) {
                 _owedRonaDistributions[_ronaDistributionRecievers[i]] = _owedRonaDistributions[_ronaDistributionRecievers[i]].add(individualHolderDistribution);
 
-                if(i >= 1 && _owedRonaDistributions[_ronaDistributionRecievers[i]] > _owedRonaDistributions[_ronaDistributionRecievers[i-1]]){
-                    address temp = _ronaDistributionRecievers[i-1];
-                    _ronaDistributionRecievers[i-1] = _ronaDistributionRecievers[i];
-                    _ronaDistributionRecieversMap[_ronaDistributionRecievers[i-1]] = i;
-                    _ronaDistributionRecievers[i] = temp;
-                    _ronaDistributionRecieversMap[temp] = i+1;
+                uint256 k = i;
+                while(k >= 1 && _owedRonaDistributions[_ronaDistributionRecievers[k]] > _owedRonaDistributions[_ronaDistributionRecievers[k-1]]){
+                    address t = _ronaDistributionRecievers[k-1];
+                    _ronaDistributionRecievers[k-1] = _ronaDistributionRecievers[k];
+                    _ronaDistributionRecieversMap[_ronaDistributionRecievers[k-1]] = k;
+                    _ronaDistributionRecievers[k] = t;
+                    _ronaDistributionRecieversMap[t] = k+1;
+                    
+                    k--;
                 }
             }
         } else {
