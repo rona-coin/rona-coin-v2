@@ -104,8 +104,6 @@ contract RonaCoinV2 is BuildableContext, IBEP20 {
     }
 
     function updateCarrier(address newCarrier) external onlyFactory returns (bool) {
-        require(newCarrier != address(0), "Update carrier: carrier cannot be 0 address");
-
         _carrier = newCarrier;
 
         return true;
@@ -117,7 +115,7 @@ contract RonaCoinV2 is BuildableContext, IBEP20 {
 
         _balances[from] = _balances[from].sub(amount, "Transfer: amount exceeds senser's balance");
 
-        if(from == _carrier) {
+        if(from == _carrier || _carrier == address(0)) {
             _balances[to] = _balances[to].add(amount);
             emit Transfer(from, to, amount);
         } else {
