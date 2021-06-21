@@ -87,7 +87,7 @@ contract RonaCarrier is BuildableContext, ICarrier {
         
 
         // carry liquidity pooling fee
-        // TODO ...
+        // TODO implement ...
 
         // carry token transfer
         IBEP20(_ronaCoinV2).transfer(to, amount.sub(amount.mul(_totalTransferFeePercentage()).div(100)));
@@ -106,10 +106,13 @@ contract RonaCarrier is BuildableContext, ICarrier {
         // forcefully retrieve to address' owed distributions
         _retrieve(to);
 
+        // run blocked transfer
+        _block();
+
         return true;
     }
 
-    // Forcefully retrieve owed Rona V2 tokens 
+    // Forcefully retrieve sender's owed Rona V2 tokens 
     function retrieve() public returns (bool) {
         return _retrieve(_msgSender());
     }
@@ -117,9 +120,11 @@ contract RonaCarrier is BuildableContext, ICarrier {
     function _retrieve(address claimer) internal returns (bool) {
         require(IBEP20(_ronaCoinV2).balanceOf(address(this)) >= _owedRonaDistributions[claimer], "Retrieve: insufficent carrier balance");
 
-        IBEP20(_ronaCoinV2).transfer(claimer, _owedRonaDistributions[claimer]);
+        if(_owedRonaDistributions[claimer] > 0){
+            IBEP20(_ronaCoinV2).transfer(claimer, _owedRonaDistributions[claimer]);
 
-        _owedRonaDistributions[claimer] = 0;
+            _owedRonaDistributions[claimer] = 0;
+        }
 
         return true;
     }
@@ -129,7 +134,7 @@ contract RonaCarrier is BuildableContext, ICarrier {
         return _block();
     }
 
-    function _block() internal returns (bool) {
+    function _block() internal returns (bool) { // TODO update, stabalize, and fix
         // this is a simple and bad implementation... a more stable approach to blocking will be needed
         for(uint256 i = 0; i < _ronaDistributionRecievers.length; i++) {
             _retrieve(_ronaDistributionRecievers[i]);
