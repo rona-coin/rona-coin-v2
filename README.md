@@ -12,7 +12,7 @@ This project's Node JS `package.json` configuration file can be found in its sta
 * `truffle ^5.3.8`
 * `web3 ^1.3.6`
 
-This project's `package.json` also specifies a compile script to ensure stable and normal solidity compilation.
+This project's `package.json` also specifies a compile script to ensure stable and normal solidity compilation. This project's Truffle configuration for both the BSC Testnet and Mainnet can be found in the `truffle-config.js` file located at the project's root.
 
 ### `RonaCoinV2`
 This smart contract, source code for which can be found in the `contracts/RonaCoinV2.sol` file, implements the core BEP-20 token behaviors of Rona Coin V2 as discussed within [Binance's documentation on the token type](https://docs.binance.org/smart-chain/developer/BEP20.html). As such, this smart contract implements the `IBEP20` interface. Source code for this interface can be found in the `contracts/interfaces/IBEP20.sol` file.
@@ -20,7 +20,13 @@ This smart contract, source code for which can be found in the `contracts/RonaCo
 To the furthest extent possible, the `RonaCoinV2` smart contract is designed to operate as a super simple, bog-standard, run of the mill, BEP-20 token. A "carrier" contract is used to assist with the processing of transactions. This gives the `RonaCoinV2` processing logic the ability to be updated should the future need for such a fix arrise. In a worst-case scenario, the carrier address for `RonaCoinV2` can be set to the `0` address. This would have the effect of immediatly reverting the coin to a stable holding state until any nessisary fixes can be fully implemented. 
 
 ### `ICarrier`
-*Documentation to be added soon!*
+The `ICarrier` interface, defined in the `contracts/interfaces/ICarrier.sol` file, provides a standard method through which the `RonaCoinV2` smart contract can call and access the `RonaCarrier` contract which implements Rona Coin specific functionality.
+
+The `ICarrier` interface requires that a carrier smart contract implement the following method:
+```
+function carry(address from, address to, uint256 amount) public returns (bool);
+```
+This `carry` method is called from within the coin's transfer logic. During this method call, transaction fees are handled / distributed according to the coin's individual tokenomics model. 
 
 ### `RonaCarrier`
 *Documentation to be added soon!*
