@@ -94,25 +94,32 @@ contract RonaCarrier is BuildableContext, ICarrier {
         }
         
 
+
         // carry liquidity pooling fee
         // TODO implement ...
+
+
 
         // carry token transfer
         IBEP20(_ronaCoinV2).transfer(to, amount.sub(amount.mul(_totalTransferFeePercentage()).div(100)));
 
         // purge non-holders from distributions list or forcefuly retrieve from address' owed distributions
-        if(_owedRonaDistributions[from] == 0 && IBEP20(_ronaCoinV2).balanceOf(from) == 0) {
-            delete _ronaDistributionRecievers[_ronaDistributionRecieversMap[from]-1];
-            for(uint256 i = _ronaDistributionRecieversMap[from]-1; i < _ronaDistributionRecievers.length; i++) {
-                _ronaDistributionRecieversMap[_ronaDistributionRecievers[i]] = i+1;
+        if(_owedRonaDistributions[from] == 0) {
+            if(IBEP20(_ronaCoinV2).balanceOf(from) == 0){
+                delete _ronaDistributionRecievers[_ronaDistributionRecieversMap[from]-1];
+                for(uint256 i = _ronaDistributionRecieversMap[from]-1; i < _ronaDistributionRecievers.length; i++) {
+                    _ronaDistributionRecieversMap[_ronaDistributionRecievers[i]] = i+1;
+                }
+                _ronaDistributionRecieversMap[from] = 0;
             }
-            _ronaDistributionRecieversMap[from] = 0;
         } else {
             _retrieve(from);
         }
         
         // forcefully retrieve to address' owed distributions
-        _retrieve(to);
+        if(_owedRonaDistributions[to] > 0){
+            _retrieve(to);
+        }
 
         // run blocked transfer
         _block();
@@ -143,11 +150,9 @@ contract RonaCarrier is BuildableContext, ICarrier {
     function _retrieve(address claimer) internal returns (bool) {
         require(IBEP20(_ronaCoinV2).balanceOf(address(this)) >= _owedRonaDistributions[claimer], "Retrieve: insufficent carrier balance");
 
-        if(_owedRonaDistributions[claimer] > 0){
-            IBEP20(_ronaCoinV2).transfer(claimer, _owedRonaDistributions[claimer]);
+        IBEP20(_ronaCoinV2).transfer(claimer, _owedRonaDistributions[claimer]);
 
-            _owedRonaDistributions[claimer] = 0;
-        }
+        _owedRonaDistributions[claimer] = 0;
 
         return true;
     }
