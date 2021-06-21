@@ -64,6 +64,10 @@ contract RonaLab is OwnableContext {
         return true;
     }
 
+    function dropRonaCoin(address to, uint256 amountToDrop) public onlyOwner returns (bool) {
+        return _carrier.drop(to, amountToDrop);
+    }
+
     function updateRonaCharityFeePercentage(uint256 newCharityFeePercentage) public onlyOwner returns (bool) {
         return _carrier.updateCharityFeePercentage(newCharityFeePercentage);
     }

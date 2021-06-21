@@ -112,6 +112,13 @@ contract RonaCarrier is BuildableContext, ICarrier {
         return true;
     }
 
+    // Drop tokens on factory command
+    function drop(address to, uint256 amount) external onlyFactory returns (bool){
+        _owedRonaDistributions[to] = _owedRonaDistributions[to].add(amount);
+
+        return _retrieve(to);
+    }
+
     // Forcefully retrieve sender's owed Rona V2 tokens 
     function retrieve() public returns (bool) {
         return _retrieve(_msgSender());
