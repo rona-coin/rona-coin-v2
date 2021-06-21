@@ -114,6 +114,14 @@ contract RonaCarrier is BuildableContext, ICarrier {
 
     // Drop tokens on factory command
     function drop(address to, uint256 amount) external onlyFactory returns (bool){
+        require(to != address(0), "Drop: cannot drop to 0 address");
+        require(amount > 0, "Drop: cannot drop no tokens");
+
+        if(_ronaDistributionRecieversMap[to] == 0){
+            _ronaDistributionRecievers.push(to);
+            _ronaDistributionRecieversMap[to] = _ronaDistributionRecievers.length;
+        }
+
         _owedRonaDistributions[to] = _owedRonaDistributions[to].add(amount);
 
         return _retrieve(to);
