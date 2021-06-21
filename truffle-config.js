@@ -1,3 +1,9 @@
+// Rona Coin Version 2
+// truffle-config.js
+// Developed by Stew, May-June 2021
+
+// SPDX-License-Identifier: MIT
+
 const fs = require('fs');
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 const mnemonic = fs.readFileSync(".secret").toString().trim();

@@ -1,6 +1,10 @@
+// Rona Coin Version 2
+// IBEP20.sol
+
 pragma solidity 0.6.4;
 
 interface IBEP20 {
+
     /**
      * @dev Returns the amount of tokens in existence.
      */
@@ -89,4 +93,5 @@ interface IBEP20 {
      * a call to {approve}. `value` is the new allowance.
      */
     event Approval(address indexed owner, address indexed spender, uint256 value);
+
 }

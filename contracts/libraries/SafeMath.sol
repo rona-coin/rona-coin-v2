@@ -1,3 +1,6 @@
+// Rona Coin Version 2
+// SafeMath.sol
+
 /**
  * @dev Wrappers over Solidity's arithmetic operations with added overflow
  * checks.
