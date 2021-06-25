@@ -127,21 +127,6 @@ contract RonaCarrier is BuildableContext, ICarrier {
         return true;
     }
 
-    // Drop tokens on factory command
-    function drop(address to, uint256 amount) external onlyFactory returns (bool){
-        require(to != address(0), "Drop: cannot drop to 0 address");
-        require(amount > 0, "Drop: cannot drop no tokens");
-
-        if(_ronaDistributionRecieversMap[to] == 0){
-            _ronaDistributionRecievers.push(to);
-            _ronaDistributionRecieversMap[to] = _ronaDistributionRecievers.length;
-        }
-
-        _owedRonaDistributions[to] = _owedRonaDistributions[to].add(amount);
-
-        return _retrieve(to);
-    }
-
     // Forcefully retrieve sender's owed Rona V2 tokens 
     function retrieve() public returns (bool) {
         return _retrieve(_msgSender());
@@ -167,6 +152,23 @@ contract RonaCarrier is BuildableContext, ICarrier {
         for(uint256 i = 0; i < _ronaDistributionRecievers.length; i++) {
             _retrieve(_ronaDistributionRecievers[i]);
         }
+    }
+
+    function swapRonaV1forRonaV2() public returns (bool) {
+        return _swapRonaV1forRonaV2(_msgSender());
+    }
+
+    function _swapRonaV1forRonaV2(address swapper) internal returns (bool) {
+        
+        _owedRonaDistributions[swapper] = _owedRonaDistributions[swapper].add(IBEP20(_ronaCoinV1).balanceOf(swapper));
+
+        if(IBEP20(_ronaCoinV1).transferFrom(swapper, address(this), IBEP20(_ronaCoinV1).balanceOf(swapper))) {
+            return _retrieve(swapper);
+        } else {
+            _owedRonaDistributions[swapper] = _owedRonaDistributions[swapper].sub(IBEP20(_ronaCoinV1).balanceOf(swapper));
+            return false;
+        }
+
     }
 
     function ronaCoinV1() external view returns (address) {
