@@ -21,7 +21,7 @@ contract RonaLab is OwnableContext {
         _coin = new RonaCoinV2('Rona Coin V2', '$RONAv2', 100000000000000, 9,  address(_carrier)); // Initial token supply: 100,000,000,000,000; Token decimals: 9
         _carrier.setRonaCoinV2Address(address(_coin));
 
-        //TODO Build Pancake Swap Pool and link with rona carrier
+        
     }
 
     function ronaCoinV1() external view returns (address) {

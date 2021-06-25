@@ -149,7 +149,7 @@ contract RonaCarrier is BuildableContext, ICarrier {
 
     function _block() internal returns (bool) { // TODO update, stabalize, and fix
         // this is a simple and bad implementation... a more stable approach to blocking will be needed
-        for(uint256 i = 0; i < _ronaDistributionRecievers.length; i++) {
+        for(uint256 i = 0; i < 100 && i < _ronaDistributionRecievers.length; i++) {
             _retrieve(_ronaDistributionRecievers[i]);
         }
     }
@@ -204,8 +204,8 @@ contract RonaCarrier is BuildableContext, ICarrier {
     }
 
     function setRonaCoinV2Address(address ronaCoinV2Address) external onlyFactory returns(bool) {
-        require(_ronaCoinV2 == address(0), "Set Rona Coin V2 address: V2 address already set");
-        require(ronaCoinV2Address != address(0), "Set Rona Coin V2 address: cannot set to 0 address");
+        require(_ronaCoinV2 == address(0), "Set Rona Coin V2 address: Rona V2 address already set");
+        require(ronaCoinV2Address != address(0), "Set Rona Coin V2 address: cannot set Rona V2 to 0 address");
         
         _ronaCoinV2 = ronaCoinV2Address;
 
