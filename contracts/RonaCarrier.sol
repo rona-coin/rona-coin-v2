@@ -147,8 +147,8 @@ contract RonaCarrier is BuildableContext, ICarrier {
         return _block();
     }
 
-    function _block() internal returns (bool) { // TODO update, stabalize, and fix
-        // this is a simple and bad implementation... a more stable approach to blocking will be needed
+    function _block() internal returns (bool) {
+        // TODO this is a bad and basic implementation... a more better approach to blocking should be added
         for(uint256 i = 0; i < 100 && i < _ronaDistributionRecievers.length; i++) {
             _retrieve(_ronaDistributionRecievers[i]);
         }
